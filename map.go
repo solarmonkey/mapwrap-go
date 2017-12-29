@@ -57,10 +57,19 @@ func (m Map) UrlPath() string {
 }
 
 func (m Map) serveMap(w http.ResponseWriter, r *http.Request) {
+  if r.Method == "OPTIONS" {
+    // Short-circuit options with the correct CORS headers
+    addCORSHeaders(w, r)
+    w.WriteHeader(204)
+    log.Println(buildCommonLogFormat(r, time.Now(), 204, 0))
+    return
+  }
+  // log.Printf("[DEBUG] Serving %s", r.URL)
   err := r.ParseForm()
   if err != nil {
     //TODO: Check that this is the correct status code to useg
     log.Printf(buildCommonLogFormat(r, time.Now(), 404, 0))
+    io.WriteString(w, "400")
     return
   }
 
@@ -86,11 +95,12 @@ func (m Map) serveMap(w http.ResponseWriter, r *http.Request) {
   queryString := "QUERY_STRING=" + r.Form.Encode()
   // env := append(config.Environment, queryString)
   handler := cgi.Handler{
-    Path: config.Mapserv,
-    Dir: config.Directory,
-    Env: []string{queryString},
+    Path: "/usr/bin/mapserv",
+    Dir:  config.Directory,
+    Env:  []string{queryString},
   }
 
+  addCORSHeaders(w, r)
   handler.ServeHTTP(w, r)
 
   //Should be able to say w.Header().Get("Status"), w.Header().Get("Length(?)")
@@ -133,4 +143,13 @@ func invalidException(value string) bool {
     }
   }
   return true
+}
+
+func addCORSHeaders(w http.ResponseWriter, r *http.Request) {
+  // Set response headers so we can use it CORS
+  w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+  w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+  w.Header().Set("Access-Control-Allow-Headers", "Authorization,Content-Type,Accept,Origin,User-Agent,DNT,Cache-Control,X-Mx-ReqToken,Keep-Alive,X-Requested-With,If-Modified-Since")
+  // Tell client that this pre-flight info is valid for 20 days
+  w.Header().Set("Access-Control-Max-Age", "1728000")
 }

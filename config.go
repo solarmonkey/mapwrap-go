@@ -76,21 +76,16 @@ func loadConfig() {
   }
 
   if temp.Mapserv == "" {
-    out, err := exec.Command("which", "mapserv").Output()
-  
-    if err != nil {
-      log.Fatal("Error attempting to find mapserv: ", err)
-    } 
-    temp.Mapserv = string(out)
+    temp.Mapserv = "mapserv"
   }
 
   _, err = exec.Command(temp.Mapserv).Output()
   if err != nil {
     log.Fatal("Error attempting to run mapserv: ", err)
   }
-  
-  config = &temp
 
+  config = &temp
+  log.Println("[INFO] Config loaded")
 }
 
 // Decodes configuration in JSON format from the given io.Reader into

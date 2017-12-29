@@ -27,24 +27,24 @@ func init() {
 
 func main() {
   flag.Parse()
-  
-  logFile, err := os.OpenFile("mapwrap.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0644)
-  if err != nil {
-      log.Fatalf("Error opening file: %v", err)
-  }
-  defer logFile.Close()
 
-  log.SetOutput(logFile)
-  //Don't prefix the time in these logs
-  log.SetFlags(0)
-  
+  // logFile, err := os.OpenFile("mapwrap.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+  // if err != nil {
+  //   log.Fatalf("Error opening file: %v", err)
+  // }
+  // defer logFile.Close()
+
+  // log.SetOutput(logFile)
+  // //Don't prefix the time in these logs
+  // log.SetFlags(0)
+
   for _, m := range GetConfig().Maps {
     path := fmt.Sprintf("%s", m.UrlPath())
     http.HandleFunc(path, m.serveMap)
   }
 
-
-  err = http.ListenAndServe(":" + GetConfig().Port, nil)
+  log.Printf("[INFO] Starting on :%s", GetConfig().Port)
+  err := http.ListenAndServe(":"+GetConfig().Port, nil)
   if err != nil {
     fmt.Printf("Unable to start: %v", err)
   }
