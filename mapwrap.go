@@ -1,28 +1,27 @@
 package main
 
-import( 
-  "net/http"
-  "log"
-  "fmt"
-  "os"
+import (
   "flag"
+  "fmt"
+  "log"
+  "net/http"
 )
 
 var configFile string
 var mapDirectory string
 
 func init() {
-	const (
+  const (
     defaultConfig = "mapwrap.json"
-		configUsage   = "the path to the mapwrap file"
+    configUsage   = "the path to the mapwrap file"
     defaultMapDir = "maps"
     mapDirUsage   = "the path to map files"
-	)
-	flag.StringVar(&configFile, "config", defaultConfig, configUsage)
-	flag.StringVar(&configFile, "c", defaultConfig, configUsage+" (shorthand)")
+  )
+  flag.StringVar(&configFile, "config", defaultConfig, configUsage)
+  flag.StringVar(&configFile, "c", defaultConfig, configUsage+" (shorthand)")
   flag.StringVar(&mapDirectory, "maps", defaultMapDir, mapDirUsage)
   flag.StringVar(&mapDirectory, "m", defaultMapDir, mapDirUsage)
-  
+
   loadConfig()
 }
 
@@ -47,7 +46,7 @@ func main() {
 
   err = http.ListenAndServe(":" + GetConfig().Port, nil)
   if err != nil {
-    fmt.Printf("Unable to start: %v", err)    
+    fmt.Printf("Unable to start: %v", err)
   }
 
 }
