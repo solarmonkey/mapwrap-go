@@ -130,9 +130,9 @@ func normalizeKeys(v url.Values, normalFunc func(string) string) {
   for param, values := range v {
     normalizedParam := normalFunc(param)
     v.Del(param)
-    // Mapserv doesn't take multiple values per param
-    //  Save a little time and only set the first one
-    v.Set(normalizedParam, values[0])
+    for _, value := range values {
+      v.Add(normalizedParam, value)
+    }
   }
 }
 
