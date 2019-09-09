@@ -1,21 +1,21 @@
 package main
 
-import(
+import (
+  "bytes"
   "encoding/json"
+  "io"
+  "log"
   "os"
   "os/exec"
   "path/filepath"
-  "log"
-  "bytes"
-  "io"
 )
 
 type Config struct {
   Environment []string
-  Mapserv string
-  Port string 
-  Directory string
-  Maps []Map
+  Mapserv     string
+  Port        string
+  Directory   string
+  Maps        []Map
 }
 
 const defaultConfig = `
@@ -31,14 +31,13 @@ func GetConfig() *Config {
   return config
 }
 
-
 func loadConfig() {
   var temp Config
-  
+
   if err := decodeConfig(bytes.NewBufferString(defaultConfig), &temp); err != nil {
     log.Fatal(err)
   }
-  
+
   //Look for a configuration file in the following order:
   // Environment:  MAPWRAP_CONFIG
   // Current Directory: mapwrap.json
@@ -53,12 +52,12 @@ func loadConfig() {
 
   f, err := os.Open(configFile)
   defer f.Close()
-  
+
   if err != nil {
     log.Printf("Error opening configuration file: %s\n", configFile)
     log.Fatal(err)
   }
-  
+
   if err := decodeConfig(f, &temp); err != nil {
     log.Printf("Error loading configuration file: %s\n", configFile)
     log.Fatal(err)
@@ -68,29 +67,25 @@ func loadConfig() {
     temp.Directory, err = os.Getwd()
     if err != nil {
       log.Fatal(err)
-    } 
+    }
   }
   //Make sure the directory exists
   _, err = os.Stat(temp.Directory)
   if err != nil {
     log.Fatal(err)
   }
-  
+
   if temp.Mapserv == "" {
-    out, err := exec.Command("which", "mapserv").Output()
-  
-    if err != nil {
-      log.Fatal("Error attempting to find mapserv: ", err)
-    } 
-    temp.Mapserv = string(out)
+    temp.Mapserv = "mapserv"
   }
+
   _, err = exec.Command(temp.Mapserv).Output()
   if err != nil {
     log.Fatal("Error attempting to run mapserv: ", err)
   }
-  
-  config = &temp
 
+  config = &temp
+  log.Println("[INFO] Config loaded")
 }
 
 // Decodes configuration in JSON format from the given io.Reader into
